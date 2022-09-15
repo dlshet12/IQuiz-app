@@ -10,9 +10,12 @@ const isAuthenticated = require("./middleware/auth");
 const userModel = require('./models/user');
 const QuizesQuestion = require("./models/quiz");
 const QuizTitle = require("./models/quizzes");
-const QuizScore = require("./models/score")
+const QuizScore = require("./models/score");
 const { query } = require('express');
-
+const cors = require('cors');
+const corsOptions = {
+  origin: 'http://localhost:3000'
+}
 
 // env.config({path:"./config/config.env"});
 // require("./env");
@@ -26,6 +29,7 @@ app.set('view engine', 'ejs');
 app.use(express.json());  
 app.use(express.static("public"));
 app.use(cookieParser());
+app.use(cors(corsOptions));
 
 mongoose.connect("mongodb://localhost:27017/quizDB", {useNewUrlParser: true});
 
@@ -58,7 +62,7 @@ app.post("/login", async (req, res) => {
           
   try{ 
     const {email, password} = req.body;
-    console.log(md5(password));
+ console.log(req.body);
   if(!email && !password){
       return  res.status(400).send("email and password required");
     }
@@ -66,6 +70,7 @@ app.post("/login", async (req, res) => {
       expiresIn: process.env.JWT_EXPIRE,
   });
   const foundUser = await userModel.findOne({email: email})
+  console.log(foundUser);
     if(!foundUser) {
        return res.status(400).send("couldnt login");
     }
@@ -73,6 +78,7 @@ app.post("/login", async (req, res) => {
      foundUser.toJSON();
       foundUser.password=undefined;
     return res.status(200).send({message: "successfully logged in",data:foundUser});
+
     } 
     return res.status(401).send("invalid email or password");
   }
@@ -145,7 +151,7 @@ app.post("/addQuestions", isAuthenticated, async(req,res)=> {
 });
 
 
-app.get("/quizList", isAuthenticated, async(req,res) => {
+app.get("/quizList", async(req,res) => {
   try{
     if(req.user.role != "participant"){
       return res.status(400).send("sorry coudnt find the user");
@@ -217,6 +223,6 @@ app.post("/submitQuiz", isAuthenticated, async(req, res) => {
   }
 })
 
-app.listen(3000, function(){
-    console.log("server started in port 3000");
+app.listen(4000, function(){
+    console.log("server started in port 4000");
 });
