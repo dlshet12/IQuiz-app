@@ -77,6 +77,8 @@ app.post("/login", async (req, res) => {
    if(foundUser.password == md5(password)){
      foundUser.toJSON();
       foundUser.password=undefined;
+      const updatedUser = await userModel.updateOne({email: email}, {token: token});
+      foundUser.token = token;
     return res.status(200).send({message: "successfully logged in",data:foundUser});
 
     } 
@@ -112,11 +114,11 @@ app.post("/createtestQuestion",isAuthenticated, async (req, res) => {
 })
 
 
-app.post("/createQuizs", isAuthenticated, async(req,res) => {
+app.post("/createQuizs", async(req,res) => {
   try {
-    if(req.user.role != "quizCreator"){
-      return res.status(400).send("doesnt match as a creator");
-    }
+    // if(req.user.role != "quizCreator"){
+    //   return res.status(400).send("doesnt match as a creator");
+    // }
     const quizname = await QuizTitle.create(req.body);
     if(!quizname ){
       return  res.status(400).send("please enter the quiz name");
@@ -151,8 +153,9 @@ app.post("/addQuestions", isAuthenticated, async(req,res)=> {
 });
 
 
-app.get("/quizList", async(req,res) => {
+app.get("/quizList", isAuthenticated,  async(req,res) => {
   try{
+    console.log("Called!!!!")
     if(req.user.role != "participant"){
       return res.status(400).send("sorry coudnt find the user");
     }
@@ -163,26 +166,30 @@ app.get("/quizList", async(req,res) => {
       return res.status(200).send({message:" Quiz found", data:listOfTest});
     }
 catch (err){
-return res.status(500).send("somthing went wrong");
+  console.log("Error: ", err)
+  return res.status(500).send("somthing went wrong");
   }
 });
 
 
-app.get("/quizQuestion" , isAuthenticated, async(req, res)=>{
-
+app.get("/quizQuestion/:quizId" , isAuthenticated, async(req, res)=>{
+  console.log("CALLED: &&&&&&")
   try{
     if(req.user.role != "participant"){
       return res.status(400).send("sorry coudnt find the user");
     }
- const listOfQuestion = await QuizesQuestion.find({quizId: req.body.quizId});
+    if(!req.params.quizId){
+      return res.status(400).send("Please provide quizId");
+    }
+ const listOfQuestion = await QuizesQuestion.find({quizId: req.params.quizId});
       listOfQuestion.forEach(object => {
       object.answer = undefined;
-      console.log(listOfQuestion);
     });
+    console.log("Questions: ", listOfQuestion);
 
     // mongoose.Query.select('-answer');
       if (!listOfQuestion) {
-        score.create({quizId: req.body.quizId, score: score})
+        score.create({quizId: req.params.quizId, score: score})
       }
       return res.status(200).send({message:" Quiz found", data:listOfQuestion});
     }
