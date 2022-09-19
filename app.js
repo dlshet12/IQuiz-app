@@ -217,6 +217,27 @@ app.post("/submitQuiz", isAuthenticated, async (req, res) => {
   }
 })
 
+app.get("/getScore/:quizId", isAuthenticated, async(req, res)=> {
+  try{
+    if (req.user.role != "participant") {
+      return res.status(400).send("sorry coudnt find the user");
+    }
+    if (!req.user._id && !req.params.quizId) {
+      return res.status(400).send("no quiz result found");
+    }
+    const quizScore = await QuizScore.findOne({participationId:req.user._id, quizId : req.params.quizId})
+    console.log(quizScore);
+    if (!quizScore) {
+      return res.status(400).send("sorry could find score");
+    }
+    return res.status(200).send({message: " secured score", data:quizScore})
+  }
+    catch(err){
+      console.log(err);
+     return res.status(500).send("somthing went wrong");
+  }
+})
+
 app.listen(4000, function () {
   console.log("server started in port 4000");
 });

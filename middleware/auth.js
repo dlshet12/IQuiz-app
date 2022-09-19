@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 require('dotenv').config();
 
 const isAuthenticated = async(req,res,next) => {
-console.log("ttttyyyyyyyyyyyy: ", req.headers);
+
    try{
        const token = req.headers['authorization'].substring("Bearer ".length);
         console.log("thisthetorkm",token);
