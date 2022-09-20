@@ -171,7 +171,7 @@ app.get("/quizQuestion/:quizId", isAuthenticated, async (req, res) => {
     if (!req.params.quizId) {
       return res.status(400).send("Please provide quizId");
     }
-    const listOfQuestion = await QuizesQuestion.find({ quizId: req.params.quizId });
+const listOfQuestion = await QuizesQuestion.find({ quizId: req.params.quizId });
     listOfQuestion.forEach(object => {
       object.answer = undefined;
     });
@@ -183,6 +183,7 @@ app.get("/quizQuestion/:quizId", isAuthenticated, async (req, res) => {
     return res.status(200).send({ message: " Quiz found", data: listOfQuestion });
   }
   catch (err) {
+    console.log(err);
     return res.status(500).send("somthing went wrong");
   }
 });
